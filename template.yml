@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'CSV Splitter'
+Parameters:
+  # Version
+  Version:
+    Type: String
+
+  # AWS
+  SubnetIds:
+    Type: CommaDelimitedList
+  SecurityGroup:
+    Type: CommaDelimitedList
+  ExecutionRoleArn:
+    Type: String
+
+
+Resources:
+
+  # CSV Splitter Function
+  CsvSplitterFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Timeout: 680 # 8min
+      MemorySize: 512
+      Runtime: go1.x
+      Handler: app
+      Tracing: 'Active'
+      Description: 'Splita o resultado de um csv em N arquivos'
+      FunctionName: !Sub "csv-splitter"
+      ReservedConcurrentExecutions: 1
+      Role: !Ref ExecutionRoleArn
+      Environment:
+        Variables:
+          BUCKET_WRITER: !Sub "csv-splits"
+          SPLITTER_PATH_RESULT: !Sub "results"
+          SPLITTER_NUMBER_LINES: !Sub "15000"
+      VpcConfig:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds: !Ref SecurityGroup
